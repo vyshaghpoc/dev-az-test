@@ -1,69 +1,53 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "vnetName": {
-      "type": "string",
-      "defaultValue": "myVnet",
-      "metadata": {
-        "description": "Name of the virtual network."
-      }
-    },
-    "vnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.0.0.0/16",
-      "metadata": {
-        "description": "Address prefix for the virtual network in CIDR format."
-      }
-    },
-    "subnetCount": {
-      "type": "int",
-      "defaultValue": 2,
-      "metadata": {
-        "description": "Number of subnets to create."
-      }
-    }
-  },
-  "variables": {
-    "subnetAddressPrefixes": [
-      "10.0.1.0/27",
-      "10.0.2.0/27",
-      "10.0.3.0/27",
-      "10.0.4.0/27",
-      "10.0.5.0/27",
-      "10.0.6.0/27",
-      "10.0.7.0/27",
-      "10.0.8.0/27"
-    ]
-  },
-  "resources": [
-    {
-      "type": "Microsoft.Network/virtualNetworks",
-      "apiVersion": "2019-06-01",
-      "name": "[parameters('vnetName')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[parameters('vnetAddressPrefix')]"
-          ]
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "myVnet",
+            "metadata": {
+                "description": "Name of the Virtual Network"
+            }
         },
-        "subnets": [
-          {
-            "name": "subnet1",
-            "properties": {
-              "addressPrefix": "[variables('subnetAddressPrefixes')[0]]"
+        "vnetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "Address prefix for the Virtual Network in CIDR notation"
             }
-          },
-          {
-            "name": "subnet2",
-            "properties": {
-              "addressPrefix": "[variables('subnetAddressPrefixes')[1]]"
+        },
+        "subnetCount": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Number of subnets to be created within the Virtual Network"
             }
-          }
-        ]
-      }
-    }
-  ],
-  "outputs": {}
+        }
+    },
+    "variables": {
+        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-(ceil(log2(parameters('subnetCount'))) + log2(27)))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2021-06-01",
+            "name": "[parameters('vnetName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnetAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 }
