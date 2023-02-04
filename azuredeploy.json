@@ -4,7 +4,6 @@
     "parameters": {
         "vnetName": {
             "type": "string",
-            "defaultValue": "MyVnet",
             "metadata": {
                 "description": "Name of the Virtual Network"
             }
@@ -12,25 +11,25 @@
         "vnetAddressPrefix": {
             "type": "string",
             "metadata": {
-                "description": "CIDR for the Virtual Network"
+                "description": "CIDR of the Virtual Network"
             }
         },
         "subnetCount": {
             "type": "int",
-            "defaultValue": 1,
             "metadata": {
                 "description": "Number of subnets to create"
             }
         }
     },
     "variables": {
-        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0], '/', 24 + 32 - (ceil(log2(parameters('subnetCount'))) + log2(27)))]"
+        "subnetPrefixList": [],
+        "subnetName": "subnet"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-06-01",
             "name": "[parameters('vnetName')]",
+            "apiVersion": "2020-05-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "addressSpace": {
@@ -38,19 +37,35 @@
                         "[parameters('vnetAddressPrefix')]"
                     ]
                 }
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2020-06-01",
-            "name": "[concat(parameters('vnetName'), '/', 'default')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
-            ],
-            "properties": {
-                "addressPrefix": "[variables('subnetPrefix')]"
-            }
+            },
+            "resources": [
+                {
+                    "name": "[variables('subnetName')]",
+                    "type": "subnets",
+                    "apiVersion": "2020-05-01",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+                    ],
+                    "properties": {
+                        "addressPrefix": "[concat(parameters('vnetAddressPrefix').split('/')[0],'/',32-log2(pow(2,27)))]",
+                        "networkSecurityGroup": {
+                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                        }
+                    },
+                    "copy": {
+                        "name": "subnetLoop",
+                        "count": "[parameters('subnetCount')]",
+                        "mode": "Serial"
+                    }
+                }
+            ]
         }
-    ]
+    ],
+    "outputs": {
+        "vnetName": {
+            "type": "string",
+            "value": "[parameters('vnetName')]"
+        }
+    }
 }
