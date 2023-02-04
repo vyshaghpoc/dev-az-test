@@ -1,74 +1,46 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "vnetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.0.0.0/16",
-      "metadata": {
-        "description": "Address prefix for the virtual network."
-      }
-    },
-    "count": {
-      "type": "int",
-      "defaultValue": 2,
-      "metadata": {
-        "description": "Number of subnets to create."
-      }
-    }
-  },
-  "variables": {
-    "nsgName": "myNSG",
-    "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-27)]"
-  },
-  "resources": [
-    {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "apiVersion": "2019-07-01",
-      "name": "[variables('nsgName')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "securityRules": []
-      }
-    },
-    {
-      "type": "Microsoft.Network/virtualNetworks",
-      "apiVersion": "2019-07-01",
-      "name": "myVNET",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[variables('vnetAddressPrefix')]"
-          ]
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "Address prefix for the virtual network in CIDR notation."
+            }
         },
-        "subnets": [
-          {
-            "name": "subnet0",
+        "subnetCount": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Number of subnets to create in the virtual network."
+            }
+        }
+    },
+    "variables": {
+        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-(27))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2021-05-01",
+            "name": "MyVirtualNetwork",
+            "location": "westus2",
             "properties": {
-              "addressPrefix": "[variables('subnetPrefix')]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
-              }
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnetAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "MySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
             }
-          },
-          {
-            "copy": {
-              "name": "subnet",
-              "count": "[variables('count')]",
-              "input": {
-                "name": "subnet[copyIndex()]",
-                "properties": {
-                  "addressPrefix": "[variables('subnetPrefix')]",
-                  "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
-                  }
-                }
-              }
-            }
-          }
-        ]
-      }
-    }
-  ]
+        }
+    ]
 }
