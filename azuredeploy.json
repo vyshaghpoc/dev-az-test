@@ -4,33 +4,33 @@
     "parameters": {
         "vnetName": {
             "type": "string",
-            "defaultValue": "myVnet",
+            "defaultValue": "myVNet",
             "metadata": {
-                "description": "Name of the Virtual Network"
+                "description": "The name of the virtual network."
             }
         },
         "vnetAddressPrefix": {
             "type": "string",
             "defaultValue": "10.0.0.0/16",
             "metadata": {
-                "description": "Address prefix for the Virtual Network in CIDR notation"
+                "description": "The CIDR of the virtual network."
             }
         },
         "subnetCount": {
             "type": "int",
             "defaultValue": 1,
             "metadata": {
-                "description": "Number of subnets to be created within the Virtual Network"
+                "description": "The number of subnets to create."
             }
         }
     },
     "variables": {
-        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-(ceil(log2(parameters('subnetCount'))) + log2(27)))]"
+        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32 - log2(pow(2,27)))]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2021-06-01",
+            "apiVersion": "2020-05-01",
             "name": "[parameters('vnetName')]",
             "location": "[resourceGroup().location]",
             "properties": {
@@ -41,7 +41,7 @@
                 },
                 "subnets": [
                     {
-                        "name": "default",
+                        "name": "subnet1",
                         "properties": {
                             "addressPrefix": "[variables('subnetPrefix')]"
                         }
