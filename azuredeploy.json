@@ -2,48 +2,70 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "vnetCIDR": {
+        "vnetCidr": {
             "type": "string",
             "defaultValue": "10.0.0.0/16",
             "metadata": {
-                "description": "The CIDR for the Virtual Network"
+                "description": "CIDR block for the virtual network"
             }
         }
-    },
-    "variables": {
-        "subnetPrefix1": "10.0.0.0/27",
-        "subnetPrefix2": "10.0.0.32/27",
-        "subnetPrefix3": "10.0.0.64/27"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2019-07-01",
             "name": "myVnet",
-            "location": "westeurope",
+            "apiVersion": "2020-06-01",
+            "location": "West US",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[parameters('vnetCIDR')]"
+                        "[parameters('vnetCidr')]"
                     ]
                 },
                 "subnets": [
                     {
                         "name": "subnet1",
                         "properties": {
-                            "addressPrefix": "[variables('subnetPrefix1')]"
+                            "addressPrefix": "[concat(parameters('vnetCidr'), '/27')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', 'myRouteTable')]"
+                            }
                         }
                     },
                     {
                         "name": "subnet2",
                         "properties": {
-                            "addressPrefix": "[variables('subnetPrefix2')]"
+                            "addressPrefix": "[concat(parameters('vnetCidr'), '/27')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', 'myRouteTable')]"
+                            }
                         }
                     },
                     {
                         "name": "subnet3",
                         "properties": {
-                            "addressPrefix": "[variables('subnetPrefix3')]"
+                            "addressPrefix": "[concat(parameters('vnetCidr'), '/27')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', 'myRouteTable')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "myRouteTable",
+            "apiVersion": "2020-06-01",
+            "location": "West US",
+            "properties": {
+                "routes": [
+                    {
+                        "name": "defaultRoute",
+                        "properties": {
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.0.4.1"
                         }
                     }
                 ]
