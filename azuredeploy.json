@@ -23,7 +23,7 @@
         }
     },
     "variables": {
-        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-log(2, pow(2,27)))]"
+        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-27)]"
     },
     "resources": [
         {
