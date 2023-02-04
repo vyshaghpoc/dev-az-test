@@ -11,25 +11,30 @@
         "vnetAddressPrefix": {
             "type": "string",
             "metadata": {
-                "description": "CIDR range for the virtual network"
+                "description": "Address prefix for the virtual network in CIDR notation"
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the subnet"
             }
         },
         "subnetCount": {
             "type": "int",
             "metadata": {
-                "description": "Number of subnets to be created"
+                "description": "Number of subnets to create"
             }
         }
     },
     "variables": {
-        "subnets": [],
-        "subnetName": "subnet"
+        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0], '/', 32 - log2(27))]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('vnetName')]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2019-06-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "addressSpace": {
@@ -37,42 +42,16 @@
                         "[parameters('vnetAddressPrefix')]"
                     ]
                 },
-                "subnets": "[variables('subnets')]"
+                "subnets": [
+                    {
+                        "name": "[parameters('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
             }
         }
     ],
-    "outputs": {
-        "subnets": {
-            "type": "array",
-            "value": "[variables('subnets')]"
-        }
-    },
-    "functions": [
-        {
-            "namespace": "templateFunc",
-            "members": {
-                "createSubnet": {
-                    "parameters": [
-                        {
-                            "name": "vnetAddressPrefix",
-                            "type": "string"
-                        },
-                        {
-                            "name": "index",
-                            "type": "int"
-                        }
-                    ],
-                    "output": {
-                        "type": "object",
-                        "value": {
-                            "name": "[concat(variables('subnetName'), copyIndex())]",
-                            "properties": {
-                                "addressPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0], '/', 32 - log(2,27))]"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    ]
+    "outputs": {}
 }
