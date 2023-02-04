@@ -2,56 +2,52 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "vnetName": {
+        "vnetCIDR": {
             "type": "string",
+            "defaultValue": "10.0.0.0/16",
             "metadata": {
-                "description": "Name of the virtual network"
-            }
-        },
-        "vnetAddressPrefix": {
-            "type": "string",
-            "metadata": {
-                "description": "Address prefix for the virtual network in CIDR notation"
-            }
-        },
-        "subnetName": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of the subnet"
-            }
-        },
-        "subnetCount": {
-            "type": "int",
-            "metadata": {
-                "description": "Number of subnets to create"
+                "description": "The CIDR for the Virtual Network"
             }
         }
     },
     "variables": {
-        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0], '/', 32 - log2(27))]"
+        "subnetPrefix1": "10.0.0.0/27",
+        "subnetPrefix2": "10.0.0.32/27",
+        "subnetPrefix3": "10.0.0.64/27"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "name": "[parameters('vnetName')]",
-            "apiVersion": "2019-06-01",
-            "location": "[resourceGroup().location]",
+            "apiVersion": "2019-07-01",
+            "name": "myVnet",
+            "location": "westeurope",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[parameters('vnetAddressPrefix')]"
+                        "[parameters('vnetCIDR')]"
                     ]
                 },
                 "subnets": [
                     {
-                        "name": "[parameters('subnetName')]",
+                        "name": "subnet1",
                         "properties": {
-                            "addressPrefix": "[variables('subnetPrefix')]"
+                            "addressPrefix": "[variables('subnetPrefix1')]"
+                        }
+                    },
+                    {
+                        "name": "subnet2",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix2')]"
+                        }
+                    },
+                    {
+                        "name": "subnet3",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix3')]"
                         }
                     }
                 ]
             }
         }
-    ],
-    "outputs": {}
+    ]
 }
