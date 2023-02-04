@@ -11,14 +11,14 @@
         },
         "vnetAddressPrefix": {
             "type": "string",
-            "defaultValue": "10.0.0.0/16",
+            "defaultValue": "",
             "metadata": {
                 "description": "Address prefix for the VNet in CIDR format."
             }
         },
         "subnetCount": {
             "type": "int",
-            "defaultValue": 2,
+            "defaultValue": ,
             "metadata": {
                 "description": "Number of subnets to create."
             }
