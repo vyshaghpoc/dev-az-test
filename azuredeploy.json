@@ -4,48 +4,53 @@
     "parameters": {
         "vnetName": {
             "type": "string",
-            "defaultValue": "myVnet",
+            "defaultValue": "MyVnet",
             "metadata": {
-                "description": "Name of the virtual network."
+                "description": "Name of the Virtual Network"
             }
         },
         "vnetAddressPrefix": {
             "type": "string",
             "metadata": {
-                "description": "CIDR for the virtual network."
+                "description": "CIDR for the Virtual Network"
             }
         },
         "subnetCount": {
             "type": "int",
             "defaultValue": 1,
             "metadata": {
-                "description": "Number of subnets to create."
+                "description": "Number of subnets to create"
             }
         }
     },
     "variables": {
-        "subnetPrefixes": []
+        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0], '/', 24 + 32 - (ceil(log2(parameters('subnetCount'))) + log2(27)))]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-06-01",
             "name": "[parameters('vnetName')]",
-            "apiVersion": "2019-09-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
                         "[parameters('vnetAddressPrefix')]"
                     ]
-                },
-                "subnets": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('vnetName'), '/', 'default')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+            ],
+            "properties": {
+                "addressPrefix": "[variables('subnetPrefix')]"
             }
         }
-    ],
-    "outputs": {
-        "subnets": {
-            "type": "array",
-            "value": "[variables('subnetPrefixes')]"
-        }
-    }
+    ]
 }
