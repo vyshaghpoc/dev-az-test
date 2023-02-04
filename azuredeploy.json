@@ -5,67 +5,74 @@
         "vnetName": {
             "type": "string",
             "metadata": {
-                "description": "Name of the Virtual Network"
+                "description": "Name of the virtual network"
             }
         },
         "vnetAddressPrefix": {
             "type": "string",
             "metadata": {
-                "description": "CIDR of the Virtual Network"
+                "description": "CIDR range for the virtual network"
             }
         },
         "subnetCount": {
             "type": "int",
             "metadata": {
-                "description": "Number of subnets to create"
+                "description": "Number of subnets to be created"
             }
         }
     },
     "variables": {
-        "subnetPrefixList": [],
+        "subnets": [],
         "subnetName": "subnet"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('vnetName')]",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2020-06-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
                         "[parameters('vnetAddressPrefix')]"
                     ]
-                }
-            },
-            "resources": [
-                {
-                    "name": "[variables('subnetName')]",
-                    "type": "subnets",
-                    "apiVersion": "2020-05-01",
-                    "location": "[resourceGroup().location]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
-                    ],
-                    "properties": {
-                        "addressPrefix": "[concat(parameters('vnetAddressPrefix').split('/')[0],'/',32-log2(pow(2,27)))]",
-                        "networkSecurityGroup": {
-                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
-                        }
-                    },
-                    "copy": {
-                        "name": "subnetLoop",
-                        "count": "[parameters('subnetCount')]",
-                        "mode": "Serial"
-                    }
-                }
-            ]
+                },
+                "subnets": "[variables('subnets')]"
+            }
         }
     ],
     "outputs": {
-        "vnetName": {
-            "type": "string",
-            "value": "[parameters('vnetName')]"
+        "subnets": {
+            "type": "array",
+            "value": "[variables('subnets')]"
         }
-    }
+    },
+    "functions": [
+        {
+            "namespace": "templateFunc",
+            "members": {
+                "createSubnet": {
+                    "parameters": [
+                        {
+                            "name": "vnetAddressPrefix",
+                            "type": "string"
+                        },
+                        {
+                            "name": "index",
+                            "type": "int"
+                        }
+                    ],
+                    "output": {
+                        "type": "object",
+                        "value": {
+                            "name": "[concat(variables('subnetName'), copyIndex())]",
+                            "properties": {
+                                "addressPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0], '/', 32 - log(2,27))]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
 }
