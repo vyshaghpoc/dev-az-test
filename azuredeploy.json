@@ -1,57 +1,74 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "vnetName": {
-            "type": "string",
-            "defaultValue": "myVNet",
-            "metadata": {
-                "description": "Name of the VNet."
-            }
-        },
-        "vnetAddressPrefix": {
-            "type": "string",
-            "metadata": {
-                "description": "Address prefix for the VNet in CIDR format."
-            }
-        },
-        "subnetCount": {
-            "type": "int",
-            "metadata": {
-                "description": "Number of subnets to create."
-            }
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "Address prefix for the virtual network."
+      }
     },
-    "variables": {
-        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-27)]"
+    "count": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "Number of subnets to create."
+      }
+    }
+  },
+  "variables": {
+    "nsgName": "myNSG",
+    "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-27)]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-07-01",
+      "name": "[variables('nsgName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": []
+      }
     },
-    "resources": [
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2021-06-01",
-            "name": "[parameters('vnetName')]",
-            "location": "[resourceGroup().location]",
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2019-07-01",
+      "name": "myVNET",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "subnet0",
             "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[parameters('vnetAddressPrefix')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "copy": {
-                            "name": "subnetLoop",
-                            "count": "[parameters('subnetCount')]",
-                            "input": {
-                                "name": "subnet[copyIndex()]",
-                                "properties": {
-                                    "addressPrefix": "[concat(variables('subnetPrefix'), '/', 27, '.', copyIndex())]"
-                                }
-                            }
-                        }
-                    }
-                ]
+              "addressPrefix": "[variables('subnetPrefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              }
             }
-        }
-    ]
+          },
+          {
+            "copy": {
+              "name": "subnet",
+              "count": "[variables('count')]",
+              "input": {
+                "name": "subnet[copyIndex()]",
+                "properties": {
+                  "addressPrefix": "[variables('subnetPrefix')]",
+                  "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
 }
