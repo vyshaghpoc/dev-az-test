@@ -4,34 +4,33 @@
     "parameters": {
         "vnetName": {
             "type": "string",
-            "defaultValue": "myVNet",
+            "defaultValue": "myVnet",
             "metadata": {
-                "description": "The name of the virtual network."
+                "description": "Name of the virtual network."
             }
         },
         "vnetAddressPrefix": {
             "type": "string",
-            "defaultValue": "10.0.0.0/16",
             "metadata": {
-                "description": "The CIDR of the virtual network."
+                "description": "CIDR for the virtual network."
             }
         },
         "subnetCount": {
             "type": "int",
             "defaultValue": 1,
             "metadata": {
-                "description": "The number of subnets to create."
+                "description": "Number of subnets to create."
             }
         }
     },
     "variables": {
-        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32 - log2(pow(2,27)))]"
+        "subnetPrefixes": []
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-05-01",
             "name": "[parameters('vnetName')]",
+            "apiVersion": "2019-09-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "addressSpace": {
@@ -39,15 +38,14 @@
                         "[parameters('vnetAddressPrefix')]"
                     ]
                 },
-                "subnets": [
-                    {
-                        "name": "subnet1",
-                        "properties": {
-                            "addressPrefix": "[variables('subnetPrefix')]"
-                        }
-                    }
-                ]
+                "subnets": []
             }
         }
-    ]
+    ],
+    "outputs": {
+        "subnets": {
+            "type": "array",
+            "value": "[variables('subnetPrefixes')]"
+        }
+    }
 }
