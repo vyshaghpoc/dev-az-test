@@ -11,21 +11,19 @@
         },
         "vnetAddressPrefix": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
                 "description": "Address prefix for the VNet in CIDR format."
             }
         },
         "subnetCount": {
             "type": "int",
-            "defaultValue": ,
             "metadata": {
                 "description": "Number of subnets to create."
             }
         }
     },
     "variables": {
-        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',variables('vnetAddressPrefix').split('/')[1], '/',24+log2(parameters('subnetCount')))]"
+        "subnetPrefix": "[concat(variables('vnetAddressPrefix').split('/')[0],'/',32-log2(pow(2,27)))]"
     },
     "resources": [
         {
@@ -41,25 +39,13 @@
                 },
                 "subnets": [
                     {
-                        "name": "subnet1",
-                        "properties": {
-                            "addressPrefix": "[concat(variables('subnetPrefix'), '/0')]"
-                        }
-                    },
-                    {
-                        "name": "subnet2",
-                        "properties": {
-                            "addressPrefix": "[concat(variables('subnetPrefix'), '/1')]"
-                        }
-                    },
-                    {
                         "copy": {
                             "name": "subnetLoop",
-                            "count": "[parameters('subnetCount') - 2]",
+                            "count": "[parameters('subnetCount')]",
                             "input": {
                                 "name": "subnet[copyIndex()]",
                                 "properties": {
-                                    "addressPrefix": "[concat(variables('subnetPrefix'), '/', copyIndex() + 2)]"
+                                    "addressPrefix": "[concat(variables('subnetPrefix'), '/', 27, '.', copyIndex())]"
                                 }
                             }
                         }
