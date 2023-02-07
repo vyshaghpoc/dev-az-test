@@ -1,89 +1,53 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "vnetName": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of the Virtual Network."
-            }
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetCidr": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "The CIDR notation for the virtual network."
+      }
+    }
+  },
+  "variables": {
+    "subnet1Prefix": "10.0.0.0/27",
+    "subnet2Prefix": "10.0.0.32/27",
+    "subnet3Prefix": "10.0.0.64/27"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "hfk",
+      "apiVersion": "2020-05-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetCidr')]"
+          ]
         },
-        "vnetCidr": {
-            "type": "string",
-            "metadata": {
-                "description": "CIDR of the Virtual Network."
-            }
-        },
-        "subnet1Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of the first Subnet."
-            }
-        },
-        "subnet1Cidr": {
-            "type": "string",
-            "metadata": {
-                "description": "CIDR of the first Subnet."
-            }
-        },
-        "subnet2Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of the second Subnet."
-            }
-        },
-        "subnet2Cidr": {
-            "type": "string",
-            "metadata": {
-                "description": "CIDR of the second Subnet."
-            }
-        },
-        "subnet3Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of the third Subnet."
-            }
-        },
-        "subnet3Cidr": {
-            "type": "string",
-            "metadata": {
-                "description": "CIDR of the third Subnet."
-            }
-        }
-    },
-    "resources": [
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2019-09-01",
-            "name": "[parameters('vnetName')]",
-            "location": "[resourceGroup().location]",
+        "subnets": [
+          {
+            "name": "subnet1",
             "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[parameters('vnetCidr')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "[parameters('subnet1Name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnet1Cidr')]"
-                        }
-                    },
-                    {
-                        "name": "[parameters('subnet2Name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnet2Cidr')]"
-                        }
-                    },
-                    {
-                        "name": "[parameters('subnet3Name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnet3Cidr')]"
-                        }
-                    }
-                ]
+              "addressPrefix": "[variables('subnet1Prefix')]"
             }
-        }
-    ]
+          },
+          {
+            "name": "subnet2",
+            "properties": {
+              "addressPrefix": "[variables('subnet2Prefix')]"
+            }
+          },
+          {
+            "name": "subnet3",
+            "properties": {
+              "addressPrefix": "[variables('subnet3Prefix')]"
+            }
+          }
+        ]
+      }
+    }
+  ]
 }
