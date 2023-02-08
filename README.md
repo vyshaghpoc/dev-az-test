@@ -1,5 +1,5 @@
 # dev-az-test
-only test
+only test (Creating vNET and subnets with RT UDR) 
 
 
 
