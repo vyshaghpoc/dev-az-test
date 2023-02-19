@@ -1,6 +1,10 @@
-subnet1: 
-       -cidr: 10.0.0.0/24
-subnet2: 
-       -cidr: 10.1.0.0/24
-subnet3: 10.2.0.0/24
-       -cidr: 10.2.0.0/24
+subnet1:
+    cidrs:
+       - 10.24.13.0/24
+subnet2:
+    cidrs:
+       - 10.25.13.0/24
+subnet3:
+    cidrs:
+       - 10.26.13.0/24
+
